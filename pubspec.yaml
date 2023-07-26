@@ -39,6 +39,7 @@ dependencies:
   flutter_riverpod: ^2.3.6
   dart_openai: ^4.0.0
   envied: ^0.3.0+3
+  flutter_chat_ui: ^1.6.9
 
 dev_dependencies:
   flutter_test:

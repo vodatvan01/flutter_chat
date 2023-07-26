@@ -1,4 +1,5 @@
 import 'package:chatbot_app/providers/api_key_provider.dart';
+import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,7 +15,8 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   bool _hasText = false;
-  final List<String> _humanMassage = [];
+  final List<String> _humanMessages = [];
+  final List<String> _botAIMessages = [];
 
   @override
   void dispose() {
@@ -22,19 +24,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  void _handleSummitted(String text) {
-    // print("Text entered: $text");
+  Future<void> _handleSummitted(String text) async {
+    String aiResponse = await _getAIResponse(text);
 
     setState(() {
-      _humanMassage.add(text);
+      _humanMessages.add(text);
+      _botAIMessages.add(aiResponse);
       _textEditingController.clear(); // Xóa văn bản trong ô nhập liệu
       _hasText = false; // Xóa văn bản và cập nhật biểu tượng thành thoại
     });
   }
 
-  // void _goToHomeScreen() {
+  Future<String> _getAIResponse(String userInput) async {
+    try {
+      // Đặt API key bằng cách gọi setter
+      OpenAI.apiKey = ref.read(apiKeyProvider.notifier).state.toString();
 
-  // }
+      // Gọi API GPT-3 để lấy phản hồi từ AI
+      OpenAIChatCompletionModel chatCompletion =
+          await OpenAI.instance.chat.create(
+        model: "gpt-3.5-turbo",
+        messages: [
+          OpenAIChatCompletionChoiceMessageModel(
+            content: userInput,
+            role: OpenAIChatMessageRole.user,
+          ),
+        ],
+      );
+      // Trích xuất phản hồi từ response
+      String aiResponse = chatCompletion.choices.first.message.content;
+      return aiResponse;
+    } catch (e) {
+      return "Error: Unable to get AI response.";
+    }
+  }
 
   void _alertDialog() {
     if (ref.watch(apiKeyProvider.notifier).state == null) {
@@ -80,7 +103,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Color.fromARGB(255, 130, 87, 240),
             ],
             begin: Alignment.topCenter,
-            end: Alignment.bottomRight,
+            end: Alignment.bottomCenter,
           ),
         ),
         child: Column(
@@ -88,7 +111,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Expanded(
               child: ListView.builder(
                 reverse: true, // Đảo ngược thứ tự các mục trong danh sách
-                itemCount: _humanMassage.length,
+                itemCount: _humanMessages.length,
                 itemBuilder: (context, index) {
                   // Hiển thị các tin nhắn đã gửi/nhận trên màn hình
                   return Container(
@@ -104,21 +127,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       0.6, // Giới hạn chiều rộng tối đa của tin nhắn
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.amber, // Màu nền của tin nhắn
-                                  borderRadius: BorderRadius.circular(
-                                      2), // Bo tròn các góc
+                                  border: Border.all(
+                                      color: Colors.amber, width: 2.0),
+                                  borderRadius: BorderRadius.circular(18),
+                                  // Bo tròn các góc
                                 ),
+                                padding: const EdgeInsets.all(10),
                                 child: Text(
-                                  _humanMassage[
-                                      (_humanMassage.length - index - 1)],
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                ),
+                                    _humanMessages[
+                                        (_humanMessages.length - index - 1)],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    )),
                               ),
                               const SizedBox(width: 12),
                               const CircleAvatar(
                                 // Bọc biểu tượng trong widget CircleAvatar
-                                backgroundColor: Colors.amber,
+                                backgroundColor: Color.fromARGB(255, 18, 6, 50),
                                 child: Icon(
                                   Icons.person,
                                   color: Colors.white,
@@ -134,7 +161,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             children: [
                               const CircleAvatar(
                                 // Bọc biểu tượng trong widget CircleAvatar
-                                backgroundColor: Colors.amber,
+                                backgroundColor: Color.fromARGB(255, 21, 3, 67),
                                 child: Icon(
                                   Icons.computer,
                                   color: Colors.white,
@@ -145,15 +172,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 width: 12,
                               ),
                               Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width *
+                                      0.6, // Giới hạn chiều rộng tối đa của tin nhắn
+                                ),
                                 decoration: BoxDecoration(
-                                  color: Colors.amber, // Màu nền của tin nhắn
-                                  borderRadius: BorderRadius.circular(2),
+                                  border: Border.all(
+                                      color: Colors.amber, width: 2.0),
+                                  borderRadius: BorderRadius.circular(18),
+                                  // Bo tròn các góc
                                 ),
-                                child: const Text(
-                                  'phan hoi tu AI',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                ),
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                    _botAIMessages.isNotEmpty
+                                        ? _botAIMessages[
+                                            _botAIMessages.length - index - 1]
+                                        : 'danh sach rong',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    )),
                               ),
                             ],
                           )
@@ -187,6 +226,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           _hasText = value.isNotEmpty;
                         });
                       },
+                      style: const TextStyle(fontSize: 16),
                       decoration: const InputDecoration.collapsed(
                           hintText: 'Send a message'),
                     ),
