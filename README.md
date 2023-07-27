@@ -1,7 +1,16 @@
 # chatbot_app
 
 A new Flutter project.
-<img width="206" alt="image" src="https://github.com/vodatvan01/flutter_chat/assets/87610505/28c5c1d8-d79b-4723-b947-64372c044eaa">
+
+## Screenshots
+
+| Screenshot 1                                 | Screenshot 2                                 | Screenshot 3                                 |
+|----------------------------------------------|----------------------------------------------|----------------------------------------------|
+| ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/27afae3e-91ca-4d20-9cf1-c02193e992f8)
+ | ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/412d1333-b6d5-4d5b-b067-8ceff7afc29f)
+ | ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/f9f084aa-2e22-45f7-b986-367aba4007ed)
+ |
+
 
 
 ## Getting Started
