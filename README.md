@@ -6,7 +6,7 @@ A new Flutter project.
 
 | Screenshot 1                                 | Screenshot 2                                 | Screenshot 3                                 |
 |----------------------------------------------|----------------------------------------------|----------------------------------------------|
-| ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/27afae3e-91ca-4d20-9cf1-c02193e992f8)|![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/27afae3e-91ca-4d20-9cf1-c02193e992f8)|![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/f9f084aa-2e22-45f7-b986-367aba4007ed)|
+| ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/27afae3e-91ca-4d20-9cf1-c02193e992f8)|![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/1f2bdaaf-11f0-49a7-a31a-e4bd4cd27559)|![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/f9f084aa-2e22-45f7-b986-367aba4007ed)|
 
 
 
