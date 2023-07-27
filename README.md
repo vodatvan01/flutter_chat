@@ -2,6 +2,12 @@
 
 A new Flutter project.
 
+
+## Features
+
+* Users can engage in real-time conversations with the chatbot. The chat interface allows smooth communication with instant message updates.
+
+
 ## Screenshots
 
 | Screenshot 1                                 | Screenshot 2                                 | Screenshot 3                                 |
