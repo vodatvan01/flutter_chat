@@ -1,6 +1,8 @@
 # chatbot_app
 
 A new Flutter project.
+<img width="206" alt="image" src="https://github.com/vodatvan01/flutter_chat/assets/87610505/28c5c1d8-d79b-4723-b947-64372c044eaa">
+
 
 ## Getting Started
 
