@@ -1,3 +1,4 @@
+import 'package:chatbot_app/Widgets/main_drawer.dart';
 import 'package:chatbot_app/screens/chat.dart';
 import 'package:chatbot_app/screens/home.dart';
 import 'package:chatbot_app/screens/summerize.dart';
@@ -24,9 +25,16 @@ class _TabsScreenState extends State<TabsScreen> {
     });
   }
 
-  void _setSelectHome() {
+  void _goToHomeScreen() {
     setState(() {
       _selectHome = true;
+    });
+  }
+
+  void _goToChatScreen() {
+    setState(() {
+      // _selectPageIndex = 0;
+      _selectHome = false;
     });
   }
 
@@ -41,12 +49,6 @@ class _TabsScreenState extends State<TabsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.home,
-          ),
-          onPressed: _setSelectHome,
-        ),
         title: const Text(
           'Flutter ChatGPT',
           style: TextStyle(
@@ -59,7 +61,12 @@ class _TabsScreenState extends State<TabsScreen> {
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 129, 94, 215),
       ),
-      body: _selectHome ? const HomeScreen() : activePage,
+      drawer: MainDrawer(onHomePressed: _goToHomeScreen),
+      body: _selectHome
+          ? HomeScreen(
+              onChatPressed: _goToChatScreen,
+            )
+          : activePage,
       bottomNavigationBar: BottomNavigationBar(
         onTap: _selectPage,
         currentIndex: _selectPageIndex,

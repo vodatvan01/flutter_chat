@@ -1,7 +1,10 @@
+import 'package:chatbot_app/Widgets/list_view_chat.dart';
 import 'package:chatbot_app/providers/api_key_provider.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -17,11 +20,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _hasText = false;
   final List<String> _humanMessages = [];
   final List<String> _botAIMessages = [];
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _isListening = false;
+  String _lastWords = '';
+  final FlutterTts _flutterTts = FlutterTts();
 
   @override
   void dispose() {
     _textEditingController.dispose();
     super.dispose();
+  }
+
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize();
+
+      if (available) {
+        setState(() {
+          _isListening = true;
+        });
+
+        _speech.listen(
+          onResult: (result) {
+            setState(() {
+              _lastWords = result.recognizedWords;
+              _textEditingController.text = _lastWords;
+              _hasText = true;
+            });
+          },
+          localeId: 'vi_VN',
+        );
+      }
+    } else {
+      setState(() {
+        _isListening = false;
+        _speech.stop();
+      });
+    }
   }
 
   Future<void> _handleSummitted(String text) async {
@@ -74,7 +109,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   children: [
                     TextButton(
                       onPressed: () {
-                        // Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        // thêm chức năng chuyển tới homescreen
                       },
                       child: const Text(
                         'OK',
@@ -96,11 +132,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _alertDialog();
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 63, 17, 177),
-              Color.fromARGB(255, 130, 87, 240),
+              Colors.cyanAccent.shade100,
+              Colors.pinkAccent.shade100,
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -109,98 +145,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                reverse: true, // Đảo ngược thứ tự các mục trong danh sách
-                itemCount: _humanMessages.length,
-                itemBuilder: (context, index) {
-                  // Hiển thị các tin nhắn đã gửi/nhận trên màn hình
-                  return Container(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width *
-                                      0.6, // Giới hạn chiều rộng tối đa của tin nhắn
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Colors.amber, width: 2.0),
-                                  borderRadius: BorderRadius.circular(18),
-                                  // Bo tròn các góc
-                                ),
-                                padding: const EdgeInsets.all(10),
-                                child: Text(
-                                    _humanMessages[
-                                        (_humanMessages.length - index - 1)],
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                              ),
-                              const SizedBox(width: 12),
-                              const CircleAvatar(
-                                // Bọc biểu tượng trong widget CircleAvatar
-                                backgroundColor: Color.fromARGB(255, 18, 6, 50),
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            // phản hồi từ AI
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              const CircleAvatar(
-                                // Bọc biểu tượng trong widget CircleAvatar
-                                backgroundColor: Color.fromARGB(255, 21, 3, 67),
-                                child: Icon(
-                                  Icons.computer,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width *
-                                      0.6, // Giới hạn chiều rộng tối đa của tin nhắn
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Colors.amber, width: 2.0),
-                                  borderRadius: BorderRadius.circular(18),
-                                  // Bo tròn các góc
-                                ),
-                                padding: const EdgeInsets.all(10),
-                                child: Text(
-                                    _botAIMessages.isNotEmpty
-                                        ? _botAIMessages[
-                                            _botAIMessages.length - index - 1]
-                                        : 'danh sach rong',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                              ),
-                            ],
-                          )
-                        ],
-                      ));
-                },
-              ),
-            ),
+                child: ListViewChat(
+              humanMessages: _humanMessages,
+              botAIMessages: _botAIMessages,
+              flutterTts: _flutterTts,
+            )),
             Container(
               margin: const EdgeInsets.all(8.0),
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -238,7 +187,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             _handleSummitted(_textEditingController.text);
                           }
                         : () {
-                            // xu ly voice
+                            _listen();
                           },
                     icon: _hasText
                         ? const Icon(Icons.send)
