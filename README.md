@@ -20,6 +20,10 @@ A new Flutter project.
 
 
 ## Installation
+### Step 1: Download the Source Code from GitHub
+1. Access the GitHub repository containing the Flutter application source code you want to download.
+2. Click on the "Code" (or "Clone") button and copy the repository URL.
+
 
 You can download this repository from source using the
 instructions below:
