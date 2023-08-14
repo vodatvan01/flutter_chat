@@ -18,7 +18,6 @@ class ChatScreen extends StatefulWidget {
     required this.onResetChatPressed,
     required this.deleteChat,
     required this.onDeleteChatPressed,
-    required this.onSetSatePressed,
   });
 
   final String apiKey;
@@ -30,7 +29,6 @@ class ChatScreen extends StatefulWidget {
   final VoidCallback onResetChatPressed;
   final bool deleteChat;
   final VoidCallback onDeleteChatPressed;
-  final void Function() onSetSatePressed;
 
   @override
   State<ChatScreen> createState() {
@@ -48,12 +46,13 @@ class _ChatScreenState extends State<ChatScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
   String _lastWords = '';
-
+  bool checkRsBotAi = true;
   bool dlt = true;
+  bool rst = true;
   final FlutterTts _flutterTts = FlutterTts();
   String promt = '';
   String historyID = ' ';
-  bool titleText = false;
+  bool titleText = true;
 
   // String _documentID =
 
@@ -103,8 +102,6 @@ class _ChatScreenState extends State<ChatScreen> {
           documentSnapshot.data() as Map<String, dynamic>?;
       if (data != null) {
         List<dynamic> chatttls = data['title'] as List<dynamic>;
-        print(
-            '***chat***_______________________ChatTitle2 :${chatttls.length}');
 
         setState(() {
           chatTitle.clear();
@@ -220,9 +217,15 @@ class _ChatScreenState extends State<ChatScreen> {
       _botAIMessages[_botAIMessages.length - 1] = aiResponse;
       chatConversation += '\nAi: $aiResponse';
     });
-    if (_humanMessages.length == 1 && _botAIMessages.length == 1) {
+    if (_humanMessages.length == 1 &&
+        _botAIMessages.length == 1 &&
+        checkRsBotAi &&
+        titleText) {
       getChatTitlesFromFirestore();
       _createTitle();
+      setState(() {
+        titleText = false;
+      });
     }
     saveMessageToFirestore();
   }
@@ -274,26 +277,29 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       // Trích xuất phản hồi từ response
       String aiResponse = chatCompletion.choices.first.message.content;
-      setState(() {
-        print(
-            '***chat***_______________________ChatTitle1 :${chatTitle.length}');
-
-        if (chatTitle.length >= widget.documentCount) {
-          int startIndex = widget.documentCount - 1;
-          chatTitle.removeRange(startIndex, chatTitle.length);
-        }
-
-        chatTitle.add(aiResponse);
-      });
-
+      print('***chat***_______________________Title $aiResponse');
+      print(
+          '***chat***_______________________ChatTitle1 :${chatTitle.length}  docCOunt: ${widget.documentCount}');
+      // setState(() {
+      //   if (chatTitle.length == widget.documentCount) {
+      //     chatTitle.add(aiResponse);
+      //   } else if (chatTitle.length > widget.documentCount) {
+      //     chatTitle.removeRange(
+      //         chatTitle.length - widget.documentCount - 1, chatTitle.length);
+      //   } else if (chatTitle.length != widget.documentCount ||
+      //       chatTitle.isEmpty) {
+      //     chatTitle.add(aiResponse);
+      //   }
+      // });
+      chatTitle.add(aiResponse);
       await saveChatTitlesToFirestore();
       // print('***chat***_______________________ChatTitle1 :${chatTitle.length}');
 
-      // for (int i = 0; i < chatTitle.length; i++)
-      //   print('***chat***_______________________Title $i ${chatTitle[i]}');
+      for (int i = 0; i < chatTitle.length; i++)
+        print('***chat***_______________________Title $i ${chatTitle[i]}');
     } catch (e) {
       chatTitle.add('Error Title');
-      print("Error:_createTitle______________:$e");
+      print("Error:Create Title______________:$e");
     }
   }
 
@@ -347,6 +353,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   TextButton(
                     onPressed: () {
+                      setState(() {
+                        rst = true;
+                        _botAIMessages.clear();
+                        _humanMessages.clear();
+                      });
                       widget.onResetChatPressed();
                       Navigator.of(context).pop();
                       getMessageFromFirestore();
@@ -410,12 +421,21 @@ class _ChatScreenState extends State<ChatScreen> {
         titleText = true;
       });
     }
+    // if (widget.documentID != historyID) {
+    //   setState(() {
+    //     // historyID = widget.documentID;
+    //     titleText = true;
+    //   });
+    // }
 
-    // print("____________________________chat: ${widget.documentCount}")
+    // print(
+    //     "____________________________chatdocumentCount: ${widget.documentCount}");
     if (widget.resetChat &&
         _humanMessages.isNotEmpty &&
-        _botAIMessages.isNotEmpty) {
+        _botAIMessages.isNotEmpty &&
+        rst) {
       _alertReSetChatDialog();
+      rst = false;
     }
 
     if (widget.deleteChat && dlt) {
@@ -467,6 +487,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       setState(() {
                         _botAIMessages.removeAt(_botAIMessages.length - 1);
                         _humanMessages.removeAt(_humanMessages.length - 1);
+
+                        checkRsBotAi = false;
                       });
                       _handleSummitted(humanMessEnd);
                     },
@@ -508,12 +530,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       onPressed: _hasText
                           ? () {
                               _handleSummitted(_textEditingController.text);
-                              if (_humanMessages.length == 1 &&
-                                  _botAIMessages.length == 1) {
-                                widget
-                                    .onSetSatePressed(); // cập nhật trangj thái
-                                saveChatTitlesToFirestore();
-                              }
                             }
                           : () {
                               _listen();

@@ -26,7 +26,7 @@ class _TabsScreenState extends State<TabsScreen> {
   bool onPressIndex = false;
   final List<String> chatTitle = [];
   int indexChatTitle = 0;
-
+  bool _isLoading = true;
   String _apiKey = '';
 
   @override
@@ -35,6 +35,7 @@ class _TabsScreenState extends State<TabsScreen> {
     _getAPIKeyFromFirestore().then((apiKey) {
       setState(() {
         _apiKey = apiKey;
+        _isLoading = false;
       });
     });
     getDocumentCount();
@@ -55,15 +56,6 @@ class _TabsScreenState extends State<TabsScreen> {
         _documentCount = 0;
       });
     }
-  }
-
-  void setStateMain() async {
-    // getChatTitlesFromFirestore()
-    print("_______________________setState");
-
-    await getChatTitlesFromFirestore();
-
-    print("_______________________setState12312312213123123312");
   }
 
   Future<void> getChatTitlesFromFirestore() async {
@@ -200,202 +192,209 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // print('________tabs___________________$apiKey');
-
-    Widget activePage = ChatScreen(
-      onSetSatePressed: setStateMain,
-      apiKey: _apiKey,
-      documentCount: _documentCount,
-      documentID: _documentID,
-      isValidAPIKey: isValidAPIKey,
-      onHomePressed: _goToHomeScreen,
-      resetChat: resetChat,
-      onResetChatPressed: _resetChat,
-      deleteChat: deleteChat,
-      onDeleteChatPressed: _deleteChat,
-    );
-
-    if (_selectPageIndex == 1) {
-      activePageTitle = 'Summerize';
-      activePage = SummerizeScreen(
-        apiKey: _apiKey,
-      );
+    if (_isLoading) {
+      return const CircularProgressIndicator();
     } else {
-      activePageTitle = 'ChatBot';
-    }
-
-    print("____________________________Tabschat: $_documentCount");
-    print("____________________________chatTitle: $indexChatTitle");
-
-    return Scaffold(
-      appBar: AppBar(
-          title: Text(
-            _selectHome ? 'Home' : activePageTitle,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          backgroundColor: const Color.fromARGB(255, 129, 94, 215),
-          actions: _selectHome
-              ? []
-              : _selectPageIndex == 0
-                  ? <Widget>[
-                      PopupMenuButton<String>(
-                        onSelected: (value) {
-                          getChatTitlesFromFirestore();
-                          // Xử lý sự kiện khi một mục trong menu được chọn
-                          if (value == 'Rename Chat') {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                String newChatName =
-                                    ""; // Biến lưu tên chat mới
-
-                                return AlertDialog(
-                                  title: const Text('Rename Chat'),
-                                  content: TextField(
-                                    onChanged: (value) {
-                                      newChatName = value
-                                          .trim(); // Cập nhật giá trị tên chat mới
-                                    },
-                                    decoration: const InputDecoration(
-                                        hintText: 'Enter new chat name'),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        // Thực hiện xử lý khi nhấn nút Save
-                                        if (newChatName.isNotEmpty) {
-                                          setState(() {
-                                            if (onPressIndex == false) {
-                                              indexChatTitle--;
-                                            }
-                                            chatTitle[indexChatTitle] =
-                                                newChatName;
-                                          });
-                                          saveChatTitlesToFirestore();
-                                          getChatTitlesFromFirestore();
-                                          Navigator.pop(context);
-                                        } else {
-                                          // Hiển thị thông báo lỗi bằng SnackBar
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Please enter new chat name'),
-                                              backgroundColor: Colors.red,
-                                            ),
-                                          );
-                                        } // Đóng AlertDialog
-                                      },
-                                      child: const Text('Save'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(
-                                            context); // Đóng AlertDialog
-                                      },
-                                      child: const Text('Cancel'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          } else if (value == 'Reset Chat') {
-                            setState(() {
-                              resetChat = false;
-                            });
-                            saveMessageToFirestore();
-                            getDocumentCount();
-                            getChatTitlesFromFirestore();
-                            setState(() {
-                              resetChat = true;
-                            });
-                          } else if (value == 'Delete Chat') {
-                            deleteHistoryChat();
-                            getDocumentCount();
-                            getChatTitlesFromFirestore();
-                            setState(() {
-                              chatTitle.removeAt(indexChatTitle);
-                            });
-                            saveChatTitlesToFirestore();
-                            setState(() {
-                              deleteChat = true;
-                            });
-                          }
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return [
-                            const PopupMenuItem<String>(
-                              value: 'Rename Chat',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_square),
-                                  SizedBox(width: 5),
-                                  Text('Rename Chat')
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'Reset Chat',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.auto_delete_outlined),
-                                  SizedBox(width: 5),
-                                  Text('Reset Chat')
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'Delete Chat',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete),
-                                  SizedBox(width: 5),
-                                  Text('Delete Chat')
-                                ],
-                              ),
-                            ),
-                          ];
-                        },
-                      ),
-                    ]
-                  : []),
-      drawer: MainDrawer(
-        chatTitle: chatTitle,
-        onHomePressed: _goToHomeScreen,
+      Widget activePage = ChatScreen(
+        apiKey: _apiKey,
         documentCount: _documentCount,
+        documentID: _documentID,
         isValidAPIKey: isValidAPIKey,
-        selectPageIndex: _selectPageIndex,
-        onHistoryPressed: (value, indexTitle) {
-          getDocumentCount();
-          getChatTitlesFromFirestore();
-          _goToChatScreen();
-          setState(() {
-            _documentID = value;
-            indexChatTitle = indexTitle;
-            onPressIndex = true;
-          });
-        },
-      ),
-      body: _selectHome
-          ? HomeScreen(
-              onChatPressed: _goToChatScreen,
-              apiKey: _apiKey,
-            )
-          : activePage,
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: _selectPage,
-        currentIndex: _selectPageIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Chat'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.summarize), label: 'Summerize'),
-        ],
-      ),
-    );
+        onHomePressed: _goToHomeScreen,
+        resetChat: resetChat,
+        onResetChatPressed: _resetChat,
+        deleteChat: deleteChat,
+        onDeleteChatPressed: _deleteChat,
+      );
+
+      if (_selectPageIndex == 1) {
+        activePageTitle = 'Summerize';
+        activePage = SummerizeScreen(
+          apiKey: _apiKey,
+        );
+      } else {
+        activePageTitle = 'ChatBot';
+      }
+
+      // print("____________________________Tabschat: $_documentID");
+      // print("____________________________lenchatTitle: ${chatTitle.length}");
+      // getChatTitlesFromFirestore();
+      return Scaffold(
+        appBar: AppBar(
+            title: Text(
+              _selectHome ? 'Home' : activePageTitle,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor: const Color.fromARGB(255, 129, 94, 215),
+            actions: _selectHome
+                ? []
+                : _selectPageIndex == 0
+                    ? <Widget>[
+                        PopupMenuButton<String>(
+                          onSelected: (value) async {
+                            // Xử lý sự kiện khi một mục trong menu được chọn
+                            await getChatTitlesFromFirestore();
+                            if (value == 'Rename Chat') {
+                              //
+                              // ignore: use_build_context_synchronously
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  String newChatName =
+                                      ""; // Biến lưu tên chat mới
+
+                                  return AlertDialog(
+                                    title: const Text('Rename Chat'),
+                                    content: TextField(
+                                      onChanged: (value) {
+                                        newChatName = value
+                                            .trim(); // Cập nhật giá trị tên chat mới
+                                      },
+                                      decoration: const InputDecoration(
+                                          hintText: 'Enter new chat name'),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () async {
+                                          if (newChatName.isNotEmpty) {
+                                            setState(() {
+                                              chatTitle[indexChatTitle] =
+                                                  newChatName;
+                                            });
+                                            await saveChatTitlesToFirestore();
+                                            await getChatTitlesFromFirestore();
+                                            // ignore: use_build_context_synchronously
+                                            Navigator.pop(context);
+                                          } else {
+                                            // Hiển thị thông báo lỗi bằng SnackBar
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Please enter new chat name'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          } // Đóng AlertDialog
+                                        },
+                                        child: const Text('Save'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(
+                                              context); // Đóng AlertDialog
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else if (value == 'Reset Chat') {
+                              setState(() async {
+                                resetChat = true;
+                                if (_documentID.isEmpty) {
+                                  _documentID = 'history_$_documentCount';
+                                }
+                                await saveMessageToFirestore();
+                                await getDocumentCount();
+                                await getChatTitlesFromFirestore();
+                                resetChat = true;
+                              });
+                            } else if (value == 'Delete Chat') {
+                              if (_documentID.isEmpty) {
+                                setState(() {
+                                  _documentID = 'history_$_documentCount';
+                                });
+                              }
+                              deleteHistoryChat();
+                              getDocumentCount();
+                              getChatTitlesFromFirestore();
+                              setState(() {
+                                chatTitle.removeAt(indexChatTitle);
+                              });
+                              saveChatTitlesToFirestore();
+                              setState(() {
+                                deleteChat = true;
+                              });
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            return [
+                              const PopupMenuItem<String>(
+                                value: 'Rename Chat',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_square),
+                                    SizedBox(width: 5),
+                                    Text('Rename Chat')
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Reset Chat',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.auto_delete_outlined),
+                                    SizedBox(width: 5),
+                                    Text('Reset Chat')
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Delete Chat',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete),
+                                    SizedBox(width: 5),
+                                    Text('Delete Chat')
+                                  ],
+                                ),
+                              ),
+                            ];
+                          },
+                        ),
+                      ]
+                    : []),
+        drawer: MainDrawer(
+          chatTitle: chatTitle,
+          onHomePressed: _goToHomeScreen,
+          documentCount: _documentCount,
+          isValidAPIKey: isValidAPIKey,
+          selectPageIndex: _selectPageIndex,
+          onHistoryPressed: (value, indexTitle) async {
+            await getDocumentCount();
+            await getChatTitlesFromFirestore();
+            _goToChatScreen();
+            setState(() {
+              _documentID = value;
+              indexChatTitle = indexTitle;
+              onPressIndex = true;
+            });
+          },
+        ),
+        body: _selectHome
+            ? HomeScreen(
+                onChatPressed: _goToChatScreen,
+                apiKey: _apiKey,
+              )
+            : activePage,
+        bottomNavigationBar: BottomNavigationBar(
+          onTap: _selectPage,
+          currentIndex: _selectPageIndex,
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble), label: 'Chat'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.summarize), label: 'Summerize'),
+          ],
+        ),
+      );
+    }
   }
 }

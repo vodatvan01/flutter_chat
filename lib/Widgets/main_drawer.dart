@@ -61,9 +61,25 @@ class _MainDrawerState extends State<MainDrawer> {
     }
   }
 
+  Future<void> saveChatTitlesToFirestore() async {
+    try {
+      // Thêm dữ liệu vào Firestore
+      await FirebaseFirestore.instance
+          .collection('Chat_titles')
+          .doc('chatTitle')
+          .set({"title": widget.chatTitle});
+      print("****************************");
+      print("Data saved to Firestore successfully!");
+    } catch (e) {
+      // print("****************************");
+      // ignore: avoid_print
+      print("Error saving data to Firestore: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // print("_______________________________ maindrawer: $_documentCount");
+    print("_______________________________ maindrawer: $_documentCount");
     return Drawer(
       child: Column(
         children: [
@@ -108,33 +124,34 @@ class _MainDrawerState extends State<MainDrawer> {
               goToHomeScreen(context);
             },
           ),
-          ListTile(
-            leading: Icon(
-              Icons.settings,
-              size: 34,
-              color: Theme.of(context).colorScheme.onBackground,
-            ),
-            title: Text(
-              'Settings',
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                  color: Theme.of(context).colorScheme.onBackground,
-                  fontSize: 20),
-            ),
-            onTap: () {},
-          ),
-          const Divider(
-            height: 2,
-          ),
+          const SizedBox(height: 10),
           if (widget.isValidAPIKey && widget.selectPageIndex == 0)
             ListTile(
               leading: const Icon(Icons.add),
               title: const Text('New Chat'),
               onTap: () {
+                // setState(() {
+                //   widget.chatTitle.add('');
+                // });
+                // saveChatTitlesToFirestore();
                 saveMessageToFirestore('history_$_documentCount');
                 widget.onHistoryPressed(
                     'history_$_documentCount', _documentCount);
                 Navigator.pop(context);
               },
+            ),
+          if (widget.isValidAPIKey && widget.selectPageIndex == 0)
+            const Divider(
+              height: 2,
+            ),
+          if (widget.isValidAPIKey && widget.selectPageIndex == 0)
+            const ListTile(
+              leading: Icon(
+                Icons.history,
+              ),
+              title: Text(
+                'History',
+              ),
             ),
           if (widget.isValidAPIKey && widget.selectPageIndex == 0)
             const Divider(
@@ -150,7 +167,7 @@ class _MainDrawerState extends State<MainDrawer> {
                         widget.chatTitle[widget.chatTitle.length - index - 1]),
                     onTap: () {
                       widget.onHistoryPressed(
-                          'history_${_documentCount - index - 1}',
+                          'history_${widget.chatTitle.length - index - 1}',
                           widget.chatTitle.length - index - 1);
                       Navigator.pop(context);
                     },
