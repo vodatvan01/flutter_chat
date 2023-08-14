@@ -16,10 +16,7 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 ***************************************
-  <div style="flex: 2;">
-    <p>Hypebard is an AI-powered writing assistant that makes writing easier and more enjoyable than ever before. Built using Flutter and written in Dart, it uses OpenAI's GPT technology to provide you with natural language processing capabilities that are second to none.</p>
-  </div>
-</div>
+
 
 ## Features
 * The app enables users to communicate through text messages, fostering interaction and easy information exchange.
