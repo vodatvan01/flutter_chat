@@ -4,7 +4,6 @@ A new Flutter project.
 
 
 ## Features
-#### Chat Messaging:
 * The app enables users to communicate through text messages, fostering interaction and easy information exchange.
 * This feature condenses lengthy text into concise and understandable summaries, saving users time and aiding quick comprehension.
 * The app boasts an intuitive interface that facilitates seamless navigation and efficient utilization of its features.
