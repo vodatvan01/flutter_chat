@@ -1,4 +1,4 @@
-# chatbot_app
+ # chatbot_app
 
 A new Flutter project.
 
@@ -29,14 +29,17 @@ A new Flutter project.
 2. Navigate to the directory where you want to store the source code using the cd path_to_directory command.
 3. Clone the repository using the following command (replace URL_repository with the URL you copied):
 
-``bash
-    git clone https://github.com/vodatvan01/flutter_chat.git
+```bash
+git clone https://github.com/SpiderMan-XiaoDo/chat_bot.git
+cd chat_bot
+````
 
     
 4.Install the Flutter dependencies by running:
 
-``bash
-    flutter pub get
+```bash
+git clone https://github.com/SpiderMan-XiaoDo/chat_bot.git
+cd chat_bot
 ````
     
 ## Getting Started
