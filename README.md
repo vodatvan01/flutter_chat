@@ -32,7 +32,7 @@ A new Flutter project.
 git clone https://github.com/vodatvan01/flutter_chat.git
 
 ````
-4.Install the Flutter dependencies by running:
+4. Install the Flutter dependencies by running:
 ```bash
 flutter pub get
 
