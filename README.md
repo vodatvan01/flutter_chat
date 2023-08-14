@@ -92,7 +92,7 @@ After installing Firebase CLI, you need to log into your Firebase account to use
 
 3. A browser will open for you to log in to your Firebase account. After successful login, return to the terminal window to continue using Firebase CLI.
 
-Congratulations! Firebase CLI has been installed, and you have successfully logged in. Now you can use it to manage your Firebase projects through the command line.
+   ***************************************
     
 ## Getting Started
 
