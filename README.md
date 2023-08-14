@@ -97,8 +97,6 @@ flutterfire configure
    4. Choose a region that is close to your location.
    5. Once the database is created, you can add data to Firestore by clicking on the "Start collection" button and adding documents to each collection you create.
 
-   ***************************************
-
 ## Below is a guide on how to change Firestore rules in the Firebase Console:
 
 1. **Select Rules**:
