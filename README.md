@@ -41,7 +41,7 @@ flutter pub get
 
 Firebase Command Line Interface (CLI) is a powerful tool for managing your Firebase projects through the command line. Below is a guide on how to install the Firebase CLI on your computer.
 
-### Step 1: Install Node.js and npm
+#### Step 1: Install Node.js and npm
 
 Firebase CLI is built on the Node.js platform and uses npm (Node Package Manager) to manage software packages. If you haven't installed Node.js and npm, you can follow these steps:
 
@@ -54,7 +54,7 @@ Firebase CLI is built on the Node.js platform and uses npm (Node Package Manager
    npm -v
    ```
 
-### Step 2: Install Firebase CLI
+#### Step 2: Install Firebase CLI
 After you have installed Node.js and npm, you can proceed to install the Firebase CLI with the following steps:
 1. Open a terminal window or command prompt on your computer.
 2. Run the following command to install Firebase CLI:
@@ -63,13 +63,13 @@ After you have installed Node.js and npm, you can proceed to install the Firebas
    ```
    This command will globally install Firebase CLI on your system, allowing you to use the `firebase` command from anywhere on your computer.
 3. Wait for the installation process to complete.
-### Step 3: Verify the Installation
+#### Step 3: Verify the Installation
 To verify if Firebase CLI has been successfully installed, you can run the following command:
 ```bash
 firebase --version
 ```
 If you see the current version of Firebase CLI, it indicates that the installation was successful.
-## Step 4: Log into Firebase CLI
+#### Step 4: Log into Firebase CLI
 After installing Firebase CLI, you need to log into your Firebase account to use the features related to your projects. Follow these steps:
 1. Open a terminal window or command prompt.
 2. Run the following command to log in:
