@@ -84,9 +84,20 @@ dart pub global activate flutterfire_cli
 ```bash
 flutterfire configure
 ```
-
-
    ***************************************
+
+Sure, here's the translated version of the provided instructions in English:
+
+1. **Create a Project and Connect to Firebase:**
+   - Log in to the [Firebase Console](https://console.firebase.google.com/).
+   - Create a new project or select an existing project.
+   
+2. **Add Data to Firestore:**
+   - In the Firebase Console, select "Build" from the left sidebar and then choose "Firestore Database."
+   - Click on the "Create database" button.
+   - Select "Start in production mode."
+   - Choose a region that is close to your location.
+   - Once the database is created, you can add data to Firestore by clicking on the "Start collection" button and adding documents to each collection you create.
    
     
 ## Getting Started
