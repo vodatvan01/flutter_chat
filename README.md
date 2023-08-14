@@ -10,7 +10,6 @@ A new Flutter project.
 ## Screenshots
 
 
-
 | Home                                         | Chat                                         | History                                      |
 |----------------------------------------------|----------------------------------------------|----------------------------------------------|
 | ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/5bd19ba9-ffe5-466f-b5ac-53833af1378b)|![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/014ea1b0-e2d5-4f71-ad3b-db8eeb56a654)|![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/fb8aa845-b135-440d-9770-4e410e03c77d)|
@@ -37,6 +36,63 @@ git clone https://github.com/vodatvan01/flutter_chat.git
 flutter pub get
 
 ````
+***************************************
+# Installing Firebase CLI Guide
+
+Firebase Command Line Interface (CLI) is a powerful tool for managing your Firebase projects through the command line. Below is a guide on how to install the Firebase CLI on your computer.
+
+## Step 1: Install Node.js and npm
+
+Firebase CLI is built on the Node.js platform and uses npm (Node Package Manager) to manage software packages. If you haven't installed Node.js and npm, you can follow these steps:
+
+1. Visit the official Node.js website at [https://nodejs.org/](https://nodejs.org/).
+2. Download and install the appropriate version of Node.js for your operating system.
+3. Once the installation is complete, open a terminal window or command prompt and run the following commands to check the installed version of Node.js and npm:
+
+   ```bash
+   node -v
+   npm -v
+   ```
+
+## Step 2: Install Firebase CLI
+
+After you have installed Node.js and npm, you can proceed to install the Firebase CLI with the following steps:
+
+1. Open a terminal window or command prompt on your computer.
+2. Run the following command to install Firebase CLI:
+
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+   This command will globally install Firebase CLI on your system, allowing you to use the `firebase` command from anywhere on your computer.
+
+3. Wait for the installation process to complete.
+
+## Step 3: Verify the Installation
+
+To verify if Firebase CLI has been successfully installed, you can run the following command:
+
+```bash
+firebase --version
+```
+
+If you see the current version of Firebase CLI, it indicates that the installation was successful.
+
+## Step 4: Log into Firebase CLI
+
+After installing Firebase CLI, you need to log into your Firebase account to use the features related to your projects. Follow these steps:
+
+1. Open a terminal window or command prompt.
+2. Run the following command to log in:
+
+   ```bash
+   firebase login
+   ```
+
+3. A browser will open for you to log in to your Firebase account. After successful login, return to the terminal window to continue using Firebase CLI.
+
+Congratulations! Firebase CLI has been installed, and you have successfully logged in. Now you can use it to manage your Firebase projects through the command line.
     
 ## Getting Started
 
