@@ -124,8 +124,10 @@ flutterfire configure
       ***************************************
 ## Create the following value variables in Cloud Firestore for use in the app.
 
-![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/a371417b-c6b0-4568-a035-25cd91afff02)
+![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/d13e7987-0cf3-4bd3-bd08-9fe4bf0f6902)
+|----------------------------------------------|
 ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/c0e35513-cd7e-4989-bd4b-4bf0f014ad87)
+|----------------------------------------------|
 ![image](https://github.com/vodatvan01/flutter_chat/assets/87610505/2f32c156-364f-44c9-b8c8-487f558f748a)
 
 ***************************************
