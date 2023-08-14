@@ -19,7 +19,15 @@ A new Flutter project.
 
 
 
+## Installation
 
+You can download this repository from source using the
+instructions below:
+
+```bash
+git clone https://github.com/vodatvan01/flutter_chat.git
+cd flutter_chat
+````
 
 
 
