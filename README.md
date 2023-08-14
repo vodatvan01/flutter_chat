@@ -28,13 +28,17 @@ A new Flutter project.
 1. Open Terminal or Command Prompt on your computer.
 2. Navigate to the directory where you want to store the source code using the cd path_to_directory command.
 3. Clone the repository using the following command (replace URL_repository with the URL you copied):
+
 ``bash
     git clone https://github.com/vodatvan01/flutter_chat.git
-    ````
+````
+    
 4.Install the Flutter dependencies by running:
+
 ``bash
     flutter pub get
-    ````
+````
+    
 ## Getting Started
 
 This project is a starting point for a Flutter application.
