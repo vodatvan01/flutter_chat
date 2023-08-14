@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
 
-class ListViewChat extends StatefulWidget {
+class ListViewChat extends ConsumerStatefulWidget {
   const ListViewChat({
     super.key,
     required this.humanMessages,
@@ -13,16 +13,18 @@ class ListViewChat extends StatefulWidget {
 
   final List<String> humanMessages;
   final List<String> botAIMessages;
+
   final FlutterTts flutterTts;
 
   @override
-  State<ListViewChat> createState() {
+  ConsumerState<ListViewChat> createState() {
     return _ListViewChatState();
   }
 }
 
-class _ListViewChatState extends State<ListViewChat>
+class _ListViewChatState extends ConsumerState<ListViewChat>
     with SingleTickerProviderStateMixin {
+  // String _documentID = '';
   void textToSpeech(String text) async {
     await langdetect.initLangDetect();
     await widget.flutterTts.setLanguage(langdetect.detect(text));
@@ -32,59 +34,12 @@ class _ListViewChatState extends State<ListViewChat>
     await widget.flutterTts.speak(text);
   }
 
-  // Future<void> _getAPIKeyFromFirestore() async {
-  //   try {
-  //     // Lấy API key từ Firestore
-  //     var collection = FirebaseFirestore.instance.collection('APIKey');
-  //     var snapshot = await collection
-  //         .doc('kZZJdmsZk03CZ80J8Sj0')
-  //         .get(); // Chỉnh sửa kiểu của biến snapshot
-  //     if (snapshot.exists) {
-  //       Map<String, dynamic> data = snapshot.data()!;
-  //       String apiKey = data['apikey'];
-  //     } else {}
-  //   } catch (e) {
-  //     print("Error fetching API key: $e");
-  //   }
-  // }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _getAPIKeyFromFirestore(); // Gọi phương thức lấy API key
-  // }
-
-  Future<void> saveMessageToFirestore() async {
-    try {
-      String documentId = "27KRbfhQzxrlwgR0bS2M";
-
-      // Tạo dữ liệu mảng từ danh sách tin nhắn của người dùng và bot
-      List<String> humanMessagesList = List.from(widget.humanMessages.reversed);
-      List<String> botAIMessagesList = List.from(widget.botAIMessages.reversed);
-
-      // Thêm dữ liệu vào Firestore
-      await FirebaseFirestore.instance
-          .collection("history")
-          .doc(documentId)
-          .set({
-        "humanMessages": humanMessagesList,
-        "botAIMessages": botAIMessagesList,
-      });
-      // print("****************************");
-      // print("Data saved to Firestore successfully!");
-    } catch (e) {
-      // print("****************************");
-      // print("Error saving data to Firestore: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      reverse: true,
+      // reverse: true,
       itemCount: widget.humanMessages.length,
       itemBuilder: (context, index) {
-        saveMessageToFirestore();
         return Container(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -99,7 +54,7 @@ class _ListViewChatState extends State<ListViewChat>
                       maxWidth: MediaQuery.of(context).size.width * 0.6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.cyanAccent.shade100,
+                      color: Colors.blueGrey[100],
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(18),
                         bottomRight: Radius.circular(8),
@@ -108,8 +63,7 @@ class _ListViewChatState extends State<ListViewChat>
                     ),
                     padding: const EdgeInsets.all(12),
                     child: Text(
-                      widget.humanMessages[
-                          (widget.humanMessages.length - index - 1)],
+                      widget.humanMessages[index],
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 20,
@@ -142,7 +96,9 @@ class _ListViewChatState extends State<ListViewChat>
                       backgroundImage: AssetImage('assets/images/chatbot.png'),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(
+                    width: 8,
+                  ),
                   Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.6,
@@ -157,8 +113,7 @@ class _ListViewChatState extends State<ListViewChat>
                     ),
                     padding: const EdgeInsets.all(12),
                     child: Text(
-                      widget.botAIMessages[
-                          (widget.botAIMessages.length - index - 1)],
+                      widget.botAIMessages[index],
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 20,
@@ -168,8 +123,7 @@ class _ListViewChatState extends State<ListViewChat>
                   ),
                   IconButton(
                     onPressed: () {
-                      textToSpeech(widget.botAIMessages[
-                          (widget.botAIMessages.length - index - 1)]);
+                      textToSpeech(widget.botAIMessages[index]);
                     },
                     icon: const Icon(
                       Icons.volume_up,
