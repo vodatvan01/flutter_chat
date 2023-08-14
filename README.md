@@ -96,7 +96,33 @@ flutterfire configure
    3. Select "Start in production mode."
    4. Choose a region that is close to your location.
    5. Once the database is created, you can add data to Firestore by clicking on the "Start collection" button and adding documents to each collection you create.
-   
+
+   ***************************************
+
+## Below is a guide on how to change Firestore rules in the Firebase Console:
+
+1. **Select Rules**:
+   - In the top menu, choose the "Rules" tab.
+
+2. **Edit Rules**:
+   - On the Rules page, you will see a text editor where you can edit your rules.
+
+3. **Enter New Rules**:
+   - Replace the current rules with the rules you want to apply. For example, to apply the rules you provided:
+
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if false;
+       }
+     }
+   }
+   ```
+
+4. **Save Rules**:
+   - After making changes to the rules, make sure to click the "Save" button to save and deploy the new rules.
     
 ## Getting Started
 
