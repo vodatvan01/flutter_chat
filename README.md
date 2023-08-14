@@ -30,16 +30,16 @@ A new Flutter project.
 3. Clone the repository using the following command (replace URL_repository with the URL you copied):
 
 ```bash
-git clone https://github.com/SpiderMan-XiaoDo/chat_bot.git
-cd chat_bot
+git clone https://github.com/vodatvan01/flutter_chat.git
+
 ````
 
     
 4.Install the Flutter dependencies by running:
 
 ```bash
-git clone https://github.com/SpiderMan-XiaoDo/chat_bot.git
-cd chat_bot
+flutter pub get
+
 ````
     
 ## Getting Started
