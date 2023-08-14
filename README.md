@@ -88,16 +88,15 @@ flutterfire configure
 
 Sure, here's the translated version of the provided instructions in English:
 
-1. **Create a Project and Connect to Firebase:**
-   - Log in to the [Firebase Console](https://console.firebase.google.com/).
-   - Create a new project or select an existing project.
-   
-2. **Add Data to Firestore:**
-   - In the Firebase Console, select "Build" from the left sidebar and then choose "Firestore Database."
-   - Click on the "Create database" button.
-   - Select "Start in production mode."
-   - Choose a region that is close to your location.
-   - Once the database is created, you can add data to Firestore by clicking on the "Start collection" button and adding documents to each collection you create.
+**Create a Project and Connect to Firebase:**
+   1. Log in to the [Firebase Console](https://console.firebase.google.com/).
+   2. Create a new project or select an existing project.
+**Add Data to Firestore:**
+   1. In the Firebase Console, select "Build" from the left sidebar and then choose "Firestore Database."
+   2. Click on the "Create database" button.
+   3. Select "Start in production mode."
+   4. Choose a region that is close to your location.
+   5. Once the database is created, you can add data to Firestore by clicking on the "Start collection" button and adding documents to each collection you create.
    
     
 ## Getting Started
