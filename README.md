@@ -2,7 +2,24 @@
 
 A new Flutter project.
 
+## Getting Started
 
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+
+***************************************
+  <div style="flex: 2;">
+    <p>Hypebard is an AI-powered writing assistant that makes writing easier and more enjoyable than ever before. Built using Flutter and written in Dart, it uses OpenAI's GPT technology to provide you with natural language processing capabilities that are second to none.</p>
+  </div>
+</div>
 ## Features
 * The app enables users to communicate through text messages, fostering interaction and easy information exchange.
 * This feature condenses lengthy text into concise and understandable summaries, saving users time and aiding quick comprehension.
