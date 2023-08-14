@@ -37,8 +37,7 @@ flutter pub get
 
 ````
 ***************************************
-## Installing Firebase CLI Guide
-
+## Installing Firebase CLI
 Firebase Command Line Interface (CLI) is a powerful tool for managing your Firebase projects through the command line. Below is a guide on how to install the Firebase CLI on your computer.
 
 #### Step 1: Install Node.js and npm
@@ -69,16 +68,26 @@ To verify if Firebase CLI has been successfully installed, you can run the follo
 firebase --version
 ```
 If you see the current version of Firebase CLI, it indicates that the installation was successful.
-#### Step 4: Log into Firebase CLI
-After installing Firebase CLI, you need to log into your Firebase account to use the features related to your projects. Follow these steps:
-1. Open a terminal window or command prompt.
-2. Run the following command to log in:
-   ```bash
-   firebase login
-   ```
-3. A browser will open for you to log in to your Firebase account. After successful login, return to the terminal window to continue using Firebase CLI.
 
    ***************************************
+### Log in and test the Firebase CLI
+1. Log into Firebase using your Google account by running the following command:
+```bash
+firebase login
+```
+This command connects your local machine to Firebase and grants you access to your Firebase projects.
+2. Install the FlutterFire CLI by running the following command from any directory:
+```bash
+dart pub global activate flutterfire_cli
+```
+3. Config your app to use flutter:
+```bash
+flutterfire configure
+```
+
+
+   ***************************************
+   
     
 ## Getting Started
 
