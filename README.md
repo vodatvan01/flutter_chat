@@ -1,6 +1,5 @@
  # chatbot_app
 
-A new Flutter project.
 
 ## Features
 * The app enables users to communicate through text messages, fostering interaction and easy information exchange.
