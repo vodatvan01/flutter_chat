@@ -19,15 +19,20 @@ class _TabsScreenState extends State<TabsScreen> {
   int _selectPageIndex = 0;
   bool _selectHome = true;
   int _documentCount = 0;
-  String _documentID = '';
   bool isValidAPIKey = false;
   bool resetChat = false;
   bool deleteChat = false;
   bool onPressIndex = false;
-  final List<String> chatTitle = [];
-  int indexChatTitle = 0;
+
   bool _isLoading = true;
   String _apiKey = '';
+  List<dynamic> chatList = [];
+  Map<String, dynamic> newChat = {};
+  List<String> humanMessages = [];
+  List<String> botAIMessages = [];
+  List<String> chatTitle = [];
+  String _chatTitle = '';
+  String chatConversation = '';
 
   @override
   void initState() {
@@ -38,100 +43,97 @@ class _TabsScreenState extends State<TabsScreen> {
         _isLoading = false;
       });
     });
-    getDocumentCount();
-    getChatTitlesFromFirestore();
+    getChatHistoryData();
   }
 
-  Future<void> getDocumentCount() async {
+  void saveToFirestore() async {
     try {
-      CollectionReference collectionRef =
-          FirebaseFirestore.instance.collection("Chat_history");
-      QuerySnapshot querySnapshot = await collectionRef.get();
-      setState(() {
-        _documentCount = querySnapshot.size;
-      });
+      Map<String, dynamic> newChat = {
+        'humanMessages': humanMessages,
+        'botAIMessages': botAIMessages,
+        'chatconversation': chatConversation,
+        'ChatTitle': _chatTitle,
+      };
+
+      chatList[_documentCount - 1] = newChat;
+
+      await FirebaseFirestore.instance
+          .collection("Memory")
+          .doc('ChatHistory')
+          .set({'ListChatHistory': chatList});
+
+      print('Dữ liệu đã được lưu vào Firestore thành công.');
     } catch (e) {
-      print("Error getting document count: $e");
-      setState(() {
-        _documentCount = 0;
-      });
+      print('Lỗi khi lưu dữ liệu vào Firestore: $e');
     }
   }
 
-  Future<void> getChatTitlesFromFirestore() async {
+  void deleteToFirestore() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("Memory")
+          .doc('ChatHistory')
+          .set({'ListChatHistory': chatList});
+
+      print('Dữ liệu đã được xóa vào Firestore thành công.');
+    } catch (e) {
+      print('Lỗi khi xóa dữ liệu vào Firestore: $e');
+    }
+  }
+
+  Future<void> getChatHistoryData() async {
     try {
       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-          .collection('Chat_titles')
-          .doc('chatTitle')
+          .collection('Memory')
+          .doc('ChatHistory')
           .get();
+
       Map<String, dynamic>? data =
           documentSnapshot.data() as Map<String, dynamic>?;
+
+      // Kiểm tra dữ liệu không null và là kiểu List<Map<String, dynamic>>
       if (data != null) {
-        List<dynamic> chatttls = data['title'] as List<dynamic>;
         setState(() {
+          chatList = data['ListChatHistory'] as List<dynamic>;
+          _documentCount = chatList.length;
           chatTitle.clear();
-          chatTitle.addAll(List<String>.from(chatttls));
+          for (var chat in chatList) {
+            chatTitle.add(chat['ChatTitle']);
+          }
         });
       } else {
-        // ignore: avoid_print
-        print("Document does not exist.");
+        print("Tài liệu không tồn tại.");
       }
     } catch (e) {
-      // ignore: avoid_print
-      print("Error getting data from Firestore: $e");
+      print('Lỗi khi lấy dữ liệu từ Firestore: $e');
     }
   }
 
-  Future<void> saveChatTitlesToFirestore() async {
+// chưa xử lý phần Rename (lỗi ở document count (_documentCount))
+  Future<void> getChatHistoryData1() async {
     try {
-      // Thêm dữ liệu vào Firestore
-      await FirebaseFirestore.instance
-          .collection('Chat_titles')
-          .doc('chatTitle')
-          .set({"title": chatTitle});
-      print("****************************");
-      print("Data saved to Firestore successfully!");
-    } catch (e) {
-      // print("****************************");
-      // ignore: avoid_print
-      print("Error saving data to Firestore: $e");
-    }
-  }
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('Memory')
+          .doc('ChatHistory')
+          .get();
 
-  Future<void> saveMessageToFirestore() async {
-    try {
-      // Tạo dữ liệu mảng từ danh sách tin nhắn của người dùng và bot
-      List<String> humanMessagesList = [];
-      List<String> botAIMessagesList = [];
-      // String chatConver =
-      // Thêm dữ liệu vào Firestore
-      await FirebaseFirestore.instance
-          .collection("Chat_history")
-          .doc(_documentID)
-          .set({
-        "humanMessages": humanMessagesList,
-        "botAIMessages": botAIMessagesList,
-        "chatConversation": '',
-      });
-      // print("****************************");
-      // print("Data saved to Firestore successfully!");
-    } catch (e) {
-      // ignore: avoid_print
-      print("****************************");
-      // ignore: avoid_print
-      print("Error saving data to Firestore: $e");
-    }
-  }
+      Map<String, dynamic>? data =
+          documentSnapshot.data() as Map<String, dynamic>?;
 
-  void deleteHistoryChat() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('Chat_history')
-          .doc(_documentID)
-          .delete();
-      print('Document deleted successfully.');
+      // Kiểm tra dữ liệu không null và là kiểu List<Map<String, dynamic>>
+      if (data != null) {
+        setState(() {
+          chatList = data['ListChatHistory'] as List<dynamic>;
+          chatTitle.clear();
+          for (var chat in chatList) {
+            chatTitle.add(chat['ChatTitle']);
+          }
+        });
+      } else {
+        print("Tài liệu không tồn tại.");
+      }
     } catch (e) {
-      print('Error deleting document: $e');
+      print('Lỗi khi lấy dữ liệu từ Firestore: $e');
     }
   }
 
@@ -151,6 +153,138 @@ class _TabsScreenState extends State<TabsScreen> {
       print("Error fetching API key: $e");
       return '';
     }
+  }
+
+  void showRenameChatDialog() async {
+    String newChatName = ""; // Biến lưu tên chat mới
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Rename Chat'),
+          content: TextField(
+            onChanged: (value) {
+              newChatName = value.trim(); // Cập nhật giá trị tên chat mới
+            },
+            decoration: const InputDecoration(
+              hintText: 'Enter new chat name',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (newChatName.isNotEmpty) {
+                  setState(() {
+                    _chatTitle = newChatName;
+                  });
+                } else {
+                  setState(() {
+                    _chatTitle = 'New chat';
+                  });
+                }
+                Navigator.pop(context);
+                print('_________________________$_documentCount');
+                saveToFirestore();
+                getChatHistoryData1();
+
+                // Đóng AlertDialog
+              },
+              child: const Text('Save'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Đóng AlertDialog
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void alertReSetChatDialog() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content:
+                const Text('Are you sure you want to reset the conversation ?'),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        botAIMessages.clear();
+                        humanMessages.clear();
+                        chatConversation = '';
+                        _chatTitle = chatList[_documentCount - 1]['ChatTitle']
+                            .toString();
+                        saveToFirestore();
+                      });
+
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Reset'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  void alertDeDeleteChatDialog() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Warning', textAlign: TextAlign.center),
+            content: const Text('Are you sure you want to delete the chat?',
+                textAlign: TextAlign.center),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      print(
+                          '___________${_documentCount - 1} _________${chatList.length}');
+                      setState(() {
+                        chatList.removeAt(_documentCount - 1);
+                      });
+                      deleteToFirestore();
+                      _newChat();
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Delete'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   void _selectPage(int index) {
@@ -178,15 +312,38 @@ class _TabsScreenState extends State<TabsScreen> {
     });
   }
 
-  void _resetChat() {
+  void historyChat(int index) {
     setState(() {
-      resetChat = false;
+      _documentCount = index;
+      chatConversation = chatList[index - 1]['chatconversation'].toString();
+      humanMessages = chatList[index - 1]['humanMessages']
+          .map((element) {
+            if (element is String) {
+              return element;
+            }
+            return element.toString();
+          })
+          .whereType<String>()
+          .toList();
+
+      botAIMessages = chatList[index - 1]['botAIMessages']
+          .map((element) {
+            if (element is String) {
+              return element;
+            }
+            return element.toString();
+          })
+          .whereType<String>()
+          .toList();
     });
   }
 
-  void _deleteChat() {
+  void _newChat() async {
+    await getChatHistoryData();
     setState(() {
-      deleteChat = false;
+      humanMessages.clear();
+      botAIMessages.clear();
+      chatConversation = '';
     });
   }
 
@@ -197,14 +354,13 @@ class _TabsScreenState extends State<TabsScreen> {
     } else {
       Widget activePage = ChatScreen(
         apiKey: _apiKey,
-        documentCount: _documentCount,
-        documentID: _documentID,
         isValidAPIKey: isValidAPIKey,
+        chatList: chatList,
+        documentCount: _documentCount,
+        botAIMessages: botAIMessages,
+        humanMessages: humanMessages,
+        chatConversation: chatConversation,
         onHomePressed: _goToHomeScreen,
-        resetChat: resetChat,
-        onResetChatPressed: _resetChat,
-        deleteChat: deleteChat,
-        onDeleteChatPressed: _deleteChat,
       );
 
       if (_selectPageIndex == 1) {
@@ -216,9 +372,6 @@ class _TabsScreenState extends State<TabsScreen> {
         activePageTitle = 'ChatBot';
       }
 
-      // print("____________________________Tabschat: $_documentID");
-      // print("____________________________lenchatTitle: ${chatTitle.length}");
-      // getChatTitlesFromFirestore();
       return Scaffold(
         appBar: AppBar(
             title: Text(
@@ -236,92 +389,13 @@ class _TabsScreenState extends State<TabsScreen> {
                 : _selectPageIndex == 0
                     ? <Widget>[
                         PopupMenuButton<String>(
-                          onSelected: (value) async {
-                            // Xử lý sự kiện khi một mục trong menu được chọn
-                            await getChatTitlesFromFirestore();
+                          onSelected: (value) {
                             if (value == 'Rename Chat') {
-                              //
-                              // ignore: use_build_context_synchronously
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  String newChatName =
-                                      ""; // Biến lưu tên chat mới
-
-                                  return AlertDialog(
-                                    title: const Text('Rename Chat'),
-                                    content: TextField(
-                                      onChanged: (value) {
-                                        newChatName = value
-                                            .trim(); // Cập nhật giá trị tên chat mới
-                                      },
-                                      decoration: const InputDecoration(
-                                          hintText: 'Enter new chat name'),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () async {
-                                          if (newChatName.isNotEmpty) {
-                                            setState(() {
-                                              chatTitle[indexChatTitle] =
-                                                  newChatName;
-                                            });
-                                            await saveChatTitlesToFirestore();
-                                            await getChatTitlesFromFirestore();
-                                            // ignore: use_build_context_synchronously
-                                            Navigator.pop(context);
-                                          } else {
-                                            // Hiển thị thông báo lỗi bằng SnackBar
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'Please enter new chat name'),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                          } // Đóng AlertDialog
-                                        },
-                                        child: const Text('Save'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(
-                                              context); // Đóng AlertDialog
-                                        },
-                                        child: const Text('Cancel'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
+                              showRenameChatDialog();
                             } else if (value == 'Reset Chat') {
-                              setState(() async {
-                                resetChat = true;
-                                if (_documentID.isEmpty) {
-                                  _documentID = 'history_$_documentCount';
-                                }
-                                await saveMessageToFirestore();
-                                await getDocumentCount();
-                                await getChatTitlesFromFirestore();
-                                resetChat = true;
-                              });
+                              alertReSetChatDialog();
                             } else if (value == 'Delete Chat') {
-                              if (_documentID.isEmpty) {
-                                setState(() {
-                                  _documentID = 'history_$_documentCount';
-                                });
-                              }
-                              deleteHistoryChat();
-                              getDocumentCount();
-                              getChatTitlesFromFirestore();
-                              setState(() {
-                                chatTitle.removeAt(indexChatTitle);
-                              });
-                              saveChatTitlesToFirestore();
-                              setState(() {
-                                deleteChat = true;
-                              });
+                              alertDeDeleteChatDialog();
                             }
                           },
                           itemBuilder: (BuildContext context) {
@@ -364,18 +438,12 @@ class _TabsScreenState extends State<TabsScreen> {
         drawer: MainDrawer(
           chatTitle: chatTitle,
           onHomePressed: _goToHomeScreen,
-          documentCount: _documentCount,
           isValidAPIKey: isValidAPIKey,
           selectPageIndex: _selectPageIndex,
-          onHistoryPressed: (value, indexTitle) async {
-            await getDocumentCount();
-            await getChatTitlesFromFirestore();
-            _goToChatScreen();
-            setState(() {
-              _documentID = value;
-              indexChatTitle = indexTitle;
-              onPressIndex = true;
-            });
+          onNewChatPressed: _newChat,
+          onHistoryPressed: (indexTitle) {
+            historyChat(indexTitle);
+            print('___________$_documentCount');
           },
         ),
         body: _selectHome

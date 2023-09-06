@@ -6,30 +6,28 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+// ignore: must_be_immutable
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({
+  ChatScreen({
     super.key,
     required this.apiKey,
-    required this.documentCount,
-    required this.documentID,
     required this.isValidAPIKey,
+    required this.chatList,
+    required this.documentCount,
+    required this.humanMessages,
+    required this.botAIMessages,
+    required this.chatConversation,
     required this.onHomePressed,
-    required this.resetChat,
-    required this.onResetChatPressed,
-    required this.deleteChat,
-    required this.onDeleteChatPressed,
   });
 
   final String apiKey;
-  final int documentCount;
-  final String documentID;
   final bool isValidAPIKey;
+  final List<dynamic> chatList;
+  final int documentCount;
+  final List<String> botAIMessages;
+  final List<String> humanMessages;
+  String chatConversation;
   final VoidCallback onHomePressed;
-  final bool resetChat;
-  final VoidCallback onResetChatPressed;
-  final bool deleteChat;
-  final VoidCallback onDeleteChatPressed;
-
   @override
   State<ChatScreen> createState() {
     return _ChatScreenState();
@@ -39,129 +37,39 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   bool _hasText = false;
-  final List<String> _humanMessages = [];
-  final List<String> _botAIMessages = [];
-  final List<String> chatTitle = [];
-  var chatConversation = '';
+  bool checkConversation = true;
+
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
   String _lastWords = '';
-  bool checkRsBotAi = true;
-  bool dlt = true;
-  bool rst = true;
   final FlutterTts _flutterTts = FlutterTts();
   String promt = '';
   String historyID = ' ';
   bool titleText = true;
+  String chatTitle = '';
 
-  // String _documentID =
-
-  @override
-  void dispose() {
-    _textEditingController.dispose();
-    super.dispose();
-  }
-
-  Future<void> getMessageFromFirestore() async {
+  void saveToFirestore() async {
     try {
-      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-          .collection("Chat_history")
-          .doc(widget.documentID.isEmpty
-              ? 'history_${widget.documentCount}'
-              : widget.documentID)
-          .get();
-      Map<String, dynamic>? data =
-          documentSnapshot.data() as Map<String, dynamic>?;
-      if (data != null) {
-        List<dynamic> humanMes = data["humanMessages"] as List<dynamic>;
-        List<dynamic> botAIMes = data["botAIMessages"] as List<dynamic>;
+      Map<String, dynamic> newChat = {
+        'humanMessages': widget.humanMessages,
+        'botAIMessages': widget.botAIMessages,
+        'chatconversation': widget.chatConversation,
+        'ChatTitle': chatTitle,
+      };
+      print('${widget.chatList.length}  _____________ ${widget.documentCount}');
+      widget.chatList.length == widget.documentCount
+          ? widget.chatList.add(newChat)
+          : widget.chatList[widget.documentCount - 1] = newChat;
 
-        setState(() {
-          chatConversation = data["chatConversation"];
-          // print(humanMes[0]);
-          _humanMessages.clear();
-          _botAIMessages.clear();
-          _humanMessages.addAll(List<String>.from(humanMes.reversed));
-          _botAIMessages.addAll(List<String>.from(botAIMes.reversed));
-        });
-      } else {
-        print("Document does not exist.");
-      }
-    } catch (e) {
-      print("Error getting data from Firestore: $e");
-    }
-  }
-
-  Future<void> getChatTitlesFromFirestore() async {
-    try {
-      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-          .collection('Chat_titles')
-          .doc('chatTitle')
-          .get();
-      Map<String, dynamic>? data =
-          documentSnapshot.data() as Map<String, dynamic>?;
-      if (data != null) {
-        List<dynamic> chatttls = data['title'] as List<dynamic>;
-
-        setState(() {
-          chatTitle.clear();
-          chatTitle.addAll(List<String>.from(chatttls));
-        });
-      } else {
-        // ignore: avoid_print
-        print("Document does not exist.");
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print("Error getting data from Firestore: $e");
-    }
-  }
-
-  Future<void> saveChatTitlesToFirestore() async {
-    try {
-      // Thêm dữ liệu vào Firestore
       await FirebaseFirestore.instance
-          .collection('Chat_titles')
-          .doc('chatTitle')
-          .set({"title": chatTitle});
-      print("****************************");
-      print("Data saved to Firestore successfully!");
-    } catch (e) {
-      // print("****************************");
-      // ignore: avoid_print
-      print("Error saving data to Firestore: $e");
-    }
-  }
+          .collection("Memory")
+          .doc('ChatHistory')
+          .set({'ListChatHistory': widget.chatList});
 
-  Future<void> saveMessageToFirestore() async {
-    try {
-      // Tạo dữ liệu mảng từ danh sách tin nhắn của người dùng và bot
-      List<String> humanMessagesList = List.from(_humanMessages.reversed);
-      List<String> botAIMessagesList = List.from(_botAIMessages.reversed);
-      // String chatConver =
-      // Thêm dữ liệu vào Firestore
-      await FirebaseFirestore.instance
-          .collection("Chat_history")
-          .doc(widget.documentID.isEmpty
-              ? 'history_${widget.documentCount}'
-              : widget.documentID)
-          .set({
-        "humanMessages": humanMessagesList,
-        "botAIMessages": botAIMessagesList,
-        "chatConversation": chatConversation,
-      });
-      print("****************************");
-      print("Data saved to Firestore successfully!");
+      print('Dữ liệu đã được lưu vào Firestore thành công.');
     } catch (e) {
-      print("****************************");
-      print("Error saving data to Firestore: $e");
+      print('Lỗi khi lưu dữ liệu vào Firestore: $e');
     }
-  }
-
-  @override
-  void initState() {
-    getMessageFromFirestore();
-    super.initState();
   }
 
   void _listen() async {
@@ -194,9 +102,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _handleSummitted(String text) async {
     setState(() {
-      _humanMessages.add(text);
-      chatConversation += 'Human: $text.';
-      _botAIMessages.add("...");
+      widget.humanMessages.add(text);
+      widget.chatConversation += 'Human: $text.';
+      widget.botAIMessages.add("...");
       _textEditingController.clear(); // Xóa văn bản trong ô nhập liệu
       _hasText = false; // Xóa văn bản và cập nhật biểu tượng thành thoại
     });
@@ -206,28 +114,23 @@ class _ChatScreenState extends State<ChatScreen> {
       await Future.delayed(const Duration(milliseconds: 50));
       String partialResponse = '${aiResponse.substring(0, i + 1)}▌';
       setState(() {
-        if (_botAIMessages.isNotEmpty) {
-          _botAIMessages[_botAIMessages.length - 1] = partialResponse;
+        if (widget.botAIMessages.isNotEmpty) {
+          widget.botAIMessages[widget.botAIMessages.length - 1] =
+              partialResponse;
         }
       });
     }
 
     // Cập nhật toàn bộ câu trả lời của bot AI sau khi hiển thị từng ký tự
     setState(() {
-      _botAIMessages[_botAIMessages.length - 1] = aiResponse;
-      chatConversation += '\nAi: $aiResponse';
+      widget.botAIMessages[widget.botAIMessages.length - 1] = aiResponse;
+      widget.chatConversation += '\nAi: $aiResponse';
     });
-    if (_humanMessages.length == 1 &&
-        _botAIMessages.length == 1 &&
-        checkRsBotAi &&
-        titleText) {
-      getChatTitlesFromFirestore();
-      _createTitle();
-      setState(() {
-        titleText = false;
-      });
+    if (widget.humanMessages.length == 1 && widget.botAIMessages.length == 1) {
+      await _createTitle();
     }
-    saveMessageToFirestore();
+
+    saveToFirestore();
   }
 
   Future<String> _getAIResponse(String userInput) async {
@@ -241,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
         model: "gpt-3.5-turbo",
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
-            content: "$chatConversation\nAi: ",
+            content: "${widget.chatConversation}\nAi: ",
             role: OpenAIChatMessageRole.user,
           ),
         ],
@@ -270,110 +173,22 @@ class _ChatScreenState extends State<ChatScreen> {
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             content:
-                "hãy tạo tiêu đề với cuộc trò chuyện $chatConversation\ntiêu đề là tiếng việt, tối đa 20 ký tự \nTitle : ",
+                "hãy tạo tiêu đề với cuộc trò chuyện ${widget.chatConversation}\ntiêu đề là tiếng việt, tối đa 20 ký tự \nTitle : ",
             role: OpenAIChatMessageRole.user,
           ),
         ],
       );
       // Trích xuất phản hồi từ response
       String aiResponse = chatCompletion.choices.first.message.content;
-      print('***chat***_______________________Title $aiResponse');
-      print(
-          '***chat***_______________________ChatTitle1 :${chatTitle.length}  docCOunt: ${widget.documentCount}');
-      // setState(() {
-      //   if (chatTitle.length == widget.documentCount) {
-      //     chatTitle.add(aiResponse);
-      //   } else if (chatTitle.length > widget.documentCount) {
-      //     chatTitle.removeRange(
-      //         chatTitle.length - widget.documentCount - 1, chatTitle.length);
-      //   } else if (chatTitle.length != widget.documentCount ||
-      //       chatTitle.isEmpty) {
-      //     chatTitle.add(aiResponse);
-      //   }
-      // });
-      chatTitle.add(aiResponse);
-      await saveChatTitlesToFirestore();
-      // print('***chat***_______________________ChatTitle1 :${chatTitle.length}');
-
-      for (int i = 0; i < chatTitle.length; i++)
-        print('***chat***_______________________Title $i ${chatTitle[i]}');
+      setState(() {
+        chatTitle = aiResponse;
+      });
     } catch (e) {
-      chatTitle.add('Error Title');
-      print("Error:Create Title______________:$e");
+      print('ERRO create Title ____________________: $e');
+      setState(() {
+        chatTitle = 'statusCode: 429';
+      });
     }
-  }
-
-  void _alertDeDeleteChatDialog() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Warning'),
-            content: const Text('deleted chat history.'),
-            actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      dlt = true;
-                      setState(() {
-                        _humanMessages.clear();
-                        _botAIMessages.clear();
-                      });
-                      widget.onDeleteChatPressed();
-                      Navigator.of(context).pop();
-                      getMessageFromFirestore();
-                    },
-                    child: const Text(
-                      'Oke',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      );
-    });
-  }
-
-  void _alertReSetChatDialog() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: const Text('Have reset chat history.'),
-            actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        rst = true;
-                        _botAIMessages.clear();
-                        _humanMessages.clear();
-                      });
-                      widget.onResetChatPressed();
-                      Navigator.of(context).pop();
-                      getMessageFromFirestore();
-                    },
-                    child: const Text(
-                      'Oke',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      );
-    });
   }
 
   void _alertDialog() {
@@ -391,8 +206,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                     TextButton(
                       onPressed: () {
-                        widget.onHomePressed();
                         Navigator.of(context).pop();
+                        widget.onHomePressed();
                       },
                       child: const Text(
                         'OK',
@@ -410,39 +225,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     _alertDialog();
-
-    if (widget.documentID.isNotEmpty && widget.documentID != historyID) {
-      // print('***chat***_______________________${widget.documentCount}');
-      getMessageFromFirestore();
-      setState(() {
-        historyID = widget.documentID;
-        titleText = true;
-      });
-    }
-    // if (widget.documentID != historyID) {
-    //   setState(() {
-    //     // historyID = widget.documentID;
-    //     titleText = true;
-    //   });
-    // }
-
-    // print(
-    //     "____________________________chatdocumentCount: ${widget.documentCount}");
-    if (widget.resetChat &&
-        _humanMessages.isNotEmpty &&
-        _botAIMessages.isNotEmpty &&
-        rst) {
-      _alertReSetChatDialog();
-      rst = false;
-    }
-
-    if (widget.deleteChat && dlt) {
-      _alertDeDeleteChatDialog();
-      getMessageFromFirestore();
-      dlt = false;
-    }
 
     return KeyboardDismissOnTap(
       dismissOnCapturedTaps: true,
@@ -463,32 +253,38 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Expanded(
                 child: ListViewChat(
-                  humanMessages: _humanMessages,
-                  botAIMessages: _botAIMessages,
+                  humanMessages: widget.humanMessages,
+                  botAIMessages: widget.botAIMessages,
                   flutterTts: _flutterTts,
                 ),
               ),
-              if (_botAIMessages.isNotEmpty)
+              if (widget.botAIMessages.isNotEmpty)
                 Container(
                   alignment: Alignment.topRight,
                   child: FloatingActionButton(
                     onPressed: () {
-                      chatConversation = chatConversation.substring(
-                          0,
-                          chatConversation.length -
-                              (_botAIMessages[_botAIMessages.length - 1]
-                                      .length +
-                                  _humanMessages[_humanMessages.length - 1]
-                                      .length +
-                                  13));
+                      widget.chatConversation = widget
+                          .chatConversation
+                          .substring(
+                              0,
+                              widget.chatConversation.length -
+                                  (widget
+                                          .botAIMessages[
+                                              widget.botAIMessages.length - 1]
+                                          .length +
+                                      widget
+                                          .humanMessages[
+                                              widget.humanMessages.length - 1]
+                                          .length +
+                                      13));
 
                       String humanMessEnd =
-                          _humanMessages[_humanMessages.length - 1];
+                          widget.humanMessages[widget.humanMessages.length - 1];
                       setState(() {
-                        _botAIMessages.removeAt(_botAIMessages.length - 1);
-                        _humanMessages.removeAt(_humanMessages.length - 1);
-
-                        checkRsBotAi = false;
+                        widget.botAIMessages
+                            .removeAt(widget.botAIMessages.length - 1);
+                        widget.humanMessages
+                            .removeAt(widget.humanMessages.length - 1);
                       });
                       _handleSummitted(humanMessEnd);
                     },
@@ -529,6 +325,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     IconButton(
                       onPressed: _hasText
                           ? () {
+                              print(
+                                  'Chat_______________${widget.documentCount}');
                               _handleSummitted(_textEditingController.text);
                             }
                           : () {

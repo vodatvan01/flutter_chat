@@ -5,16 +5,16 @@ class MainDrawer extends StatefulWidget {
   const MainDrawer({
     super.key,
     required this.onHomePressed,
-    required this.documentCount,
     required this.onHistoryPressed,
     required this.isValidAPIKey,
     required this.selectPageIndex,
     required this.chatTitle,
+    required this.onNewChatPressed,
   });
 
   final VoidCallback onHomePressed;
-  final void Function(String documentID, int index) onHistoryPressed;
-  final int documentCount;
+  final VoidCallback onNewChatPressed;
+  final void Function(int index) onHistoryPressed;
   final bool isValidAPIKey;
   final int selectPageIndex;
   final List<String> chatTitle;
@@ -26,16 +26,9 @@ class MainDrawer extends StatefulWidget {
 }
 
 class _MainDrawerState extends State<MainDrawer> {
-  int _documentCount = 0;
   void goToHomeScreen(BuildContext context) {
     widget.onHomePressed();
     Navigator.pop(context);
-  }
-
-  @override
-  void initState() {
-    _documentCount = widget.documentCount;
-    super.initState();
   }
 
   Future<void> saveMessageToFirestore(String newChat) async {
@@ -79,7 +72,6 @@ class _MainDrawerState extends State<MainDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    print("_______________________________ maindrawer: $_documentCount");
     return Drawer(
       child: Column(
         children: [
@@ -130,14 +122,8 @@ class _MainDrawerState extends State<MainDrawer> {
               leading: const Icon(Icons.add),
               title: const Text('New Chat'),
               onTap: () {
-                // setState(() {
-                //   widget.chatTitle.add('');
-                // });
-                // saveChatTitlesToFirestore();
-                saveMessageToFirestore('history_$_documentCount');
-                widget.onHistoryPressed(
-                    'history_$_documentCount', _documentCount);
                 Navigator.pop(context);
+                widget.onNewChatPressed();
               },
             ),
           if (widget.isValidAPIKey && widget.selectPageIndex == 0)
@@ -166,9 +152,8 @@ class _MainDrawerState extends State<MainDrawer> {
                     title: Text(
                         widget.chatTitle[widget.chatTitle.length - index - 1]),
                     onTap: () {
-                      widget.onHistoryPressed(
-                          'history_${widget.chatTitle.length - index - 1}',
-                          widget.chatTitle.length - index - 1);
+                      widget.onHistoryPressed(widget.chatTitle.length - index);
+                      print(widget.chatTitle.length - index);
                       Navigator.pop(context);
                     },
                   );

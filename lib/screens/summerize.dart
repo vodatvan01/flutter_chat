@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -7,7 +5,6 @@ import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class SummerizeScreen extends StatefulWidget {
   const SummerizeScreen({super.key, required this.apiKey});
@@ -30,7 +27,7 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
   final FlutterTts _flutterTts = FlutterTts();
 
   bool _hasText = false;
-  bool _isLoadingAI = false;
+  // bool _isLoadingAI = false;
   final List<String> _humanMessages = [];
   final List<String> _botAISummerize = [];
 
@@ -62,50 +59,40 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
     }
   }
 
-  Future<void> uploadTxtFile(String text) async {
-    try {
-      final firebase_storage.Reference ref =
-          firebase_storage.FirebaseStorage.instance.ref().child(_filePath);
+  // Future<void> uploadTxtFile(String text) async {
+  //   try {
+  //     final firebase_storage.Reference ref =
+  //         firebase_storage.FirebaseStorage.instance.ref().child(_filePath);
 
-      final firebase_storage.SettableMetadata metadata =
-          firebase_storage.SettableMetadata(contentType: 'text/plain');
+  //     final firebase_storage.SettableMetadata metadata =
+  //         firebase_storage.SettableMetadata(contentType: 'text/plain');
 
-      final Uint8List data = Uint8List.fromList(text.codeUnits);
-      final uploadTask = ref.putData(data, metadata);
+  //     final Uint8List data = Uint8List.fromList(text.codeUnits);
+  //     final uploadTask = ref.putData(data, metadata);
 
-      await uploadTask.whenComplete(() {
-        print('TXT file uploaded.');
-      });
-    } catch (e) {
-      print("Error uploading text file: $e");
-    }
-  }
+  //     await uploadTask.whenComplete(() {
+  //       print('TXT file uploaded.');
+  //     });
+  //   } catch (e) {
+  //     print("Error uploading text file: $e");
+  //   }
+  // }
 
   void _pickFile() async {
     _humanMessages.clear();
     _botAISummerize.clear();
-
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'pdf', 'doc'],
     );
-
     if (result != null) {
       PlatformFile file = result.files.first;
-      File file1 = File(file.path!);
-      String contents = await file1.readAsString();
-
       setState(() {
-        // _fileContent = content;
         _filePath = file.path!;
         _fileName = file.name;
         _fileType = file.extension!;
-
-        uploadTxtFile(contents);
       });
     } else {
-      // User canceled the picker
-
       print('***summerize***__________User canceled the picker');
     }
   }
@@ -121,6 +108,7 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
           chunkOverlap: 0,
         );
         final docChunks = textSplitter.splitDocuments(documents);
+
         final textsWithSources = docChunks.map(
           (e) {
             return e.copyWith(
@@ -128,22 +116,26 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
             );
           },
         ).toList();
-
         final embeddings = OpenAIEmbeddings(apiKey: widget.apiKey);
-
         final docSearch = await MemoryVectorStore.fromDocuments(
           documents: textsWithSources,
           embeddings: embeddings,
         );
+
         final llm = ChatOpenAI(
           apiKey: widget.apiKey,
           model: 'gpt-3.5-turbo-0613',
           temperature: 0.7,
         );
+
         final qaChain = OpenAIQAWithSourcesChain(llm: llm);
+
         final docPrompt = PromptTemplate.fromTemplate(
-          'content: {page_content}\nSource: {source}',
+          '''Hãy sử dụng nội dung của tôi đã cung cấp trong file text để trả lời các câu hỏi bằng tiếng Việt.\nLưu ý: Nếu không tìm thấy câu trả lời trong nội dung đã cung cấp, hãy thông báo "Thông tin không có trong tài liệu đã cung cung cấp ".
+        .\ncontent: {page_content}\nSource: {source}
+        ''',
         );
+
         final finalQAChain = StuffDocumentsChain(
           llmChain: qaChain,
           documentPrompt: docPrompt,
@@ -152,14 +144,15 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
           retriever: docSearch.asRetriever(),
           combineDocumentsChain: finalQAChain,
         );
+
         // print('***summerize***______________________question: $text');
-        setState(() {
-          _isLoadingAI = true;
-        });
+        // setState(() {
+        //   _isLoadingAI = true;
+        // });
         final res = await retrievalQA(text);
-        setState(() {
-          _isLoadingAI = false;
-        });
+        // setState(() {
+        //   _isLoadingAI = false;
+        // });
         // ignore: avoid_print
 
         String aiResponse = res['result'].toString();
@@ -178,6 +171,21 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
         });
       }
     } catch (e) {
+      print("______________________________");
+      if (e.toString().contains('statusCode: 429')) {
+        setState(() {
+          _botAISummerize.add(
+              'Lỗi khi tóm tắt file , hãy thử lại... lỗi statusCode: 429 ');
+        });
+      } else {
+        setState(() {
+          _botAISummerize.add('Lỗi khi tóm tắt file , hãy thử lại');
+        });
+      }
+      print("Error loading text file: $e");
+      print("Error loading text file: $e");
+      print("Error loading text file: $e");
+      print("Error loading text file: $e");
       print("Error loading text file: $e");
     }
   }
@@ -363,16 +371,14 @@ class _SummerizeScreenState extends State<SummerizeScreen> {
                                   ),
                                 ),
                                 padding: const EdgeInsets.all(12),
-                                child: _isLoadingAI
-                                    ? const CircularProgressIndicator()
-                                    : Text(
-                                        _botAISummerize[index],
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                child: Text(
+                                  _botAISummerize[index],
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               IconButton(
                                 onPressed: () {
